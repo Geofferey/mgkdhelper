@@ -1,7 +1,6 @@
-id=mgkdhelper
+id=com.geofferey.mgkdhelper
 name=Magiskd Helper
-version=v1.0.0
+version=v1.0.1
 versionCode=1
-author=geofferey
-description=A service for restarting magiskd after crashes. This could help users who randomly lose root access.  
-minMagisk=17000
+author=geofferey @ xda-developers
+description=A service for restarting magiskd after crashes. This could help users who randomly lose root access. Includes contributions from jcmm11 & char101 @ xda-developers. 

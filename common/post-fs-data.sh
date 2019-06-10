@@ -6,9 +6,4 @@
 # if Magisk change its mount point in the future
 MODDIR=${0%/*}
 
-# This script will be executed in late_start service mode
-#Magisk Daemon Helper
-# Copyright (C) 2019 Geofferey @ XDA
-# License: GPL V3+
-
-nohup $MODDIR/script/mgkd-helper > /dev/null &
+# This script will be executed in post-fs-data mode
