@@ -1,0 +1,7 @@
+id=mgkdhelper
+name=Magiskd Helper
+version=v1.0.0
+versionCode=1
+author=geofferey
+description=A service for restarting magiskd after crashes. This could help users who randomly lose root access.  
+minMagisk=17000

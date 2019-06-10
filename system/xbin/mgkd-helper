@@ -1,0 +1,36 @@
+#!/system/xbin/bash
+
+PIDFILE=/data/local/run/magiskd-helper.pid
+LOGFILE=/data/local/tmp/magiskd-helper.log
+
+if [ -f $PIDFILE ]; then
+
+  kill -9 $(cat $PIDFILE)
+
+  rm $PIDFILE
+
+fi
+
+echo $$ >> $PIDFILE
+
+while true; do
+
+  sleep 60
+
+     if ! /system/bin/ps -a -u root |grep [m]agiskd >> /dev/null 2>&1; then
+   
+    echo $(date) >> $LOGFILE
+    echo "Magisk daemon appears to have crashed" >> $LOGFILE
+    echo "Restarting magiskd..." >> $LOGFILE
+      
+      if magisk --daemon; then
+        echo "success!" >> $LOGFILE
+      else 
+        echo "failure!" >> $LOGFILE
+      fi
+ 
+  echo >> $LOGFILE 
+
+  fi	
+
+done   
