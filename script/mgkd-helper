@@ -1,22 +1,39 @@
 #!/system/bin/sh
 
 LOGFILE=/data/local/tmp/magiskd-helper.log
+RETRIES=0
+
+magiskd_chk() {
+  pgrep magiskd >/dev/null
+}
 
 rm -f $LOGFILE
 echo "Started " $(date) >> $LOGFILE
 echo "-----------------------------" >> $LOGFILE
 echo >> $LOGFILE
+
 while true; do
    sleep 60
-      if ! pgrep magiskd >/dev/null; then
+      if ! magiskd_chk; then
          echo $(date) >> $LOGFILE
          echo "Magisk daemon appears to have crashed" >> $LOGFILE
          echo "Restarting magiskd..." >> $LOGFILE
+         
          if magisk --daemon; then
             echo "success!" >> $LOGFILE
+            echo >> $LOGFILE 
          else 
             echo "failure!" >> $LOGFILE
+            echo >> $LOGFILE
+            #((++RETRIES))
          fi
-      echo >> $LOGFILE 
-      fi	
-done   
+         
+         if (( $RETRIES > 10 )); then
+            echo "giving up!" >> $LOGFILE
+            echo >> $LOGFILE 
+            break
+         fi
+      fi
+done
+
+exit 0
