@@ -18,19 +18,20 @@ while true; do
          echo $(date) >> $LOGFILE
          echo "Magisk daemon appears to have crashed" >> $LOGFILE
          echo "Restarting magiskd..." >> $LOGFILE
-         
+
          if magisk --daemon; then
             echo "success!" >> $LOGFILE
-            echo >> $LOGFILE 
-         else 
+            RETRIES=0
+            echo >> $LOGFILE
+         else
             echo "failure!" >> $LOGFILE
             echo >> $LOGFILE
             RETRIES=$RETRIES+1
          fi
-         
+
          if [[ $RETRIES -eq 10 ]]; then
             echo "giving up!" >> $LOGFILE
-            echo >> $LOGFILE 
+            echo >> $LOGFILE
             exit 0
          fi
       fi
