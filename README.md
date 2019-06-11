@@ -1,5 +1,4 @@
-# Magisk Daemon Helper 
-# (mgkdhelper)
+# Magisk Daemon Helper (mgkdhelper)
 
 ---
 ## About Module
