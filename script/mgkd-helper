@@ -4,7 +4,7 @@ LOGFILE=/data/local/tmp/magiskd-helper.log
 RETRIES=0
 
 magiskd_chk() {
-  pgrep magiskd  >/dev/null
+  pgrep magiskd >/dev/null
 }
 
 rm -f $LOGFILE
@@ -13,7 +13,7 @@ echo "-----------------------------" >> $LOGFILE
 echo >> $LOGFILE
 
 while true; do
-   sleep 1
+   sleep 60
       if ! magiskd_chk; then
          echo $(date) >> $LOGFILE
          echo "Magisk daemon appears to have crashed" >> $LOGFILE
