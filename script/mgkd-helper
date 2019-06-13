@@ -1,38 +1,100 @@
 #!/system/bin/sh
 
 LOGFILE=/data/local/tmp/magiskd-helper.log
-RETRIES=0
+ATTEMPT=1
+DETECTIONS=0
+FAILS=0
+SUCCESSES=0
+DATE=$(date)
 
 magiskd_chk() {
+
   pgrep magiskd >/dev/null
+
 }
 
+start_log () {
+
+rm -f ${LOGFILE}.bak
+mv -f $LOGFILE ${LOGFILE}.bak 2>/dev/null
 rm -f $LOGFILE
-echo "Started " $(date) >> $LOGFILE
+echo "Started " $DATE >> $LOGFILE
+echo "Current PID: $$" >> $LOGFILE
+echo "Detections: $DETECTIONS" >> $LOGFILE
+echo "Successes: $SUCCESSES" >> $LOGFILE
+echo "Failures: $FAILS" >> $LOGFILE
 echo "-----------------------------" >> $LOGFILE
 echo >> $LOGFILE
 
+}
+
+write_log () {
+
+echo $(date) >> $LOGFILE
+echo "Magisk daemon appears to have crashed" >> $LOGFILE
+echo "Attempt to restart $ATTEMPT of 10..." >> $LOGFILE
+
+}
+
+update_stats () {
+
+sed -i -e"s/^Detections:.*/Detections: $DETECTIONS/" "$LOGFILE"
+sed -i -e"s/^Successes:.*/Successes: $SUCCESSES/" "$LOGFILE"
+sed -i -e"s/^Failures:.*/Failures: $FAILS/" "$LOGFILE"
+
+}
+
+#start_log
+
 while true; do
+
+   start_log
    sleep 60
+      
       if ! magiskd_chk; then
-         echo $(date) >> $LOGFILE
-         echo "Magisk daemon appears to have crashed" >> $LOGFILE
-         echo "Restarting magiskd..." >> $LOGFILE
+      
+         ((++DETECTIONS))
+         
+         update_stats
+         echo "Latest Detection(s):" >> $LOGFILE
+         echo >> $LOGFILE
+        
+         
+         until magiskd_chk; do
+             
+            write_log
+            update_stats
+ 
+            if magisk --daemon; then
+             
+                 echo "success!" >> $LOGFILE
+                 echo "reset" >> $LOGFILE
+                 ATTEMPT=1
+                 ((++SUCCESSES))
+                 update_stats
+                 
+             else
+                 
+                 echo "failure!" >> $LOGFILE
+                 ((++ATTEMPT))
+                 ((++FAILS))
+                 update_stats
+             
+             fi
 
-         if magisk --daemon; then
-            echo "success!" >> $LOGFILE
-            RETRIES=0
-            echo >> $LOGFILE
-         else
-            echo "failure!" >> $LOGFILE
-            echo >> $LOGFILE
-            RETRIES=$RETRIES+1
-         fi
-
-         if [[ $RETRIES -eq 10 ]]; then
-            echo "giving up!" >> $LOGFILE
-            echo >> $LOGFILE
-            exit 0
-         fi
+             if [[ $ATTEMPT -gt 10 ]]; then
+             
+                 echo >> $LOGFILE
+                 echo "It's not working, giving up now!" >> $LOGFILE
+                 exit 4
+             
+             fi
+              
+             update_stats
+             echo >> $LOGFILE
+             sleep 5
+             
+         done
+      
       fi
 done
