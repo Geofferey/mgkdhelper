@@ -1,22 +1,32 @@
 #!/system/bin/sh
 
-LOGFILE=/data/local/tmp/magiskd-helper.log
+sleep 10
+
+LOGFILE=/data/local/tmp/mgkd-helper.log
+LOGFILE_BAK=/data/local/tmp/mgkd-helper_prev.log
 ATTEMPT=1
 DETECTIONS=0
 FAILS=0
 SUCCESSES=0
 DATE=$(date)
 
-magiskd_chk() {
+magiskd_chk () {
 
-  pgrep magiskd >/dev/null
+sleep 1
+pgrep magiskd >> /dev/null
+
+}
+
+start_magiskd () {
+
+magisk --daemon >> /dev/null 2>&1 &
 
 }
 
 start_log () {
 
-rm -f ${LOGFILE}.bak
-mv -f $LOGFILE ${LOGFILE}.bak 2>/dev/null
+rm -f $LOGFILE_BAK
+mv -f $LOGFILE $LOGFILE_BAK 2>/dev/null
 rm -f $LOGFILE
 echo "Started " $DATE >> $LOGFILE
 echo "Current PID: $$" >> $LOGFILE
@@ -24,6 +34,8 @@ echo "Detections: $DETECTIONS" >> $LOGFILE
 echo "Successes: $SUCCESSES" >> $LOGFILE
 echo "Failures: $FAILS" >> $LOGFILE
 echo "-----------------------------" >> $LOGFILE
+echo >> $LOGFILE
+echo "Latest attempts:" >> $LOGFILE
 echo >> $LOGFILE
 
 }
@@ -42,59 +54,66 @@ sed -i -e"s/^Detections:.*/Detections: $DETECTIONS/" "$LOGFILE"
 sed -i -e"s/^Successes:.*/Successes: $SUCCESSES/" "$LOGFILE"
 sed -i -e"s/^Failures:.*/Failures: $FAILS/" "$LOGFILE"
 
+sleep 1
+
 }
 
-#start_log
+rotate_logs () {
+
+if [[ $(wc -c <$LOGFILE) -gt 1610 ]]; then
+
+    start_log
+
+fi
+
+}
+
+start_log
 
 while true; do
 
-   start_log
+   rotate_logs
+
    sleep 60
-      
+
       if ! magiskd_chk; then
-      
+
          ((++DETECTIONS))
-         
          update_stats
-         echo "Latest Detection(s):" >> $LOGFILE
-         echo >> $LOGFILE
-        
-         
+
          until magiskd_chk; do
-             
+
             write_log
             update_stats
- 
-            if magisk --daemon; then
-             
+
+            if start_magiskd && magiskd_chk; then
+
                  echo "success!" >> $LOGFILE
                  echo "reset" >> $LOGFILE
                  ATTEMPT=1
                  ((++SUCCESSES))
-                 update_stats
-                 
+
              else
-                 
+
                  echo "failure!" >> $LOGFILE
                  ((++ATTEMPT))
                  ((++FAILS))
-                 update_stats
-             
+
              fi
 
              if [[ $ATTEMPT -gt 10 ]]; then
-             
+
                  echo >> $LOGFILE
                  echo "It's not working, giving up now!" >> $LOGFILE
                  exit 4
-             
+
              fi
-              
+
              update_stats
              echo >> $LOGFILE
              sleep 5
-             
+
          done
-      
+
       fi
 done
