@@ -2,13 +2,22 @@
 
 sleep 10
 
-LOGFILE=/data/local/tmp/mgkd-helper.log
-LOGFILE_BAK=/data/local/tmp/mgkd-helper_prev.log
+PIDFILE=/data/local/tmp/mgkdhelper.pid
+LOGFILE=/data/local/tmp/mgkdhelper.log
+LOGFILE_PREV=/data/local/tmp/mgkdhelper_prev.log
 ATTEMPT=1
 DETECTIONS=0
 FAILS=0
 SUCCESSES=0
 DATE=$(date)
+
+set_pid () {
+
+kill -9 $(cat $PIDFILE) >> /dev/null 2>&1
+rm $PIDFILE >> /dev/null 2>&1
+echo $$ >> $PIDFILE
+
+}
 
 magiskd_chk () {
 
@@ -26,7 +35,7 @@ magisk --daemon >> /dev/null 2>&1 &
 start_log () {
 
 rm -f $LOGFILE_BAK
-mv -f $LOGFILE $LOGFILE_BAK 2>/dev/null
+mv -f $LOGFILE $LOGFILE_PREV 2>/dev/null
 rm -f $LOGFILE
 echo "Started " $DATE >> $LOGFILE
 echo "Current PID: $$" >> $LOGFILE
@@ -68,12 +77,12 @@ fi
 
 }
 
+set_pid
 start_log
 
 while true; do
 
    rotate_logs
-
    sleep 60
 
       if ! magiskd_chk; then
@@ -103,6 +112,7 @@ while true; do
 
              if [[ $ATTEMPT -gt 10 ]]; then
 
+                 rm -f $PIDFILE >> /dev/null 2>&1
                  echo >> $LOGFILE
                  echo "It's not working, giving up now!" >> $LOGFILE
                  exit 4
