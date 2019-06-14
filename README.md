@@ -9,7 +9,7 @@ This simple module is started during boot as root and is intended to check for t
 
 Logs may be found in:
 
-`/data/local/tmp/magkdhelper.log`
+`/data/local/tmp/mgkdhelper.log`
 
 ---
 ## XDA Thread
